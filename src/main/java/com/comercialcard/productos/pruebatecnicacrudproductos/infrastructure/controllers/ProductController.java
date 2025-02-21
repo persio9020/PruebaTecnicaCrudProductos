@@ -3,6 +3,11 @@ package com.comercialcard.productos.pruebatecnicacrudproductos.infrastructure.co
 import com.comercialcard.productos.pruebatecnicacrudproductos.application.services.ProductService;
 import com.comercialcard.productos.pruebatecnicacrudproductos.domain.models.dto.ProductoRequest;
 import com.comercialcard.productos.pruebatecnicacrudproductos.domain.models.dto.ProductoResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
+@Tag(name = "Produto", description = "Api de productos")
 @RestController
 @RequestMapping("/product")
+@Slf4j
 public class ProductController {
 
     private final ProductService productService;
@@ -22,26 +28,52 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @Operation(
+            summary = "Crea productos",
+            description = "Creación de productos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa")
+    })
     @PostMapping
     public ResponseEntity<ProductoResponse> createProduct(@RequestBody ProductoRequest productoRequest) {
         ProductoResponse createdProducto = productService.createProduct(productoRequest);
         return new ResponseEntity<>(createdProducto, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{productoId}")
-    public ResponseEntity<ProductoResponse> getProductById(@RequestParam("productoId") Long id) {
-        return productService.retrieveById(id).map(productoDTO -> new ResponseEntity<>(productoDTO, HttpStatus.OK))
+    @Operation(
+            summary = "Obtiene el producto por id",
+            description = "Obtiene el producto por id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductoResponse> getProductById(@PathVariable Long id) {
+        log.info("Iniciando el product con id: {}", id);
+        return productService.retrieveById(Long.parseLong(id.toString())).map(productoDTO -> new ResponseEntity<>(productoDTO, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @Operation(
+            summary = "Obtiene todos los productos",
+            description = "Obtiene todos los productos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa")
+    })
     @GetMapping
     public ResponseEntity<List<ProductoResponse>> getAllProducts() {
         List<ProductoResponse> allProducts = productService.retrieveAll();
         return new ResponseEntity<>(allProducts, HttpStatus.OK);
     }
 
-    @GetMapping("/get-combinations/{value}")
-    public ResponseEntity<List<List<Object>>> getCombinations(@PathVariable Double value) {
+    @Operation(
+            summary = "Retorna un listado con las combinaciones de nombres",
+            description = "retorne un listado con las combinaciones de nombres de \n" +
+                    "productos cuya suma de precios sea menor o igual al valor ingresado, e incluir el valor de dicha suma")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa")
+    })
+    @GetMapping("/get-combinations")
+    public ResponseEntity<List<List<Object>>> getCombinations(@RequestParam(required = true) Double value) {
         List<ProductoResponse> products = productService.retrieveAll();
         List<List<Object>> result = new ArrayList<>();
         int n = products.size();
@@ -74,6 +106,12 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "Actualiza el producto por Id",
+            description = "Actualización el producto por Id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa")
+    })
     @PutMapping
     public ResponseEntity<ProductoResponse> updateProduct(@RequestBody ProductoRequest productoRequest) {
         return productService.updateProduct(productoRequest)
@@ -81,8 +119,14 @@ public class ProductController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/{productoId}")
-    public ResponseEntity<Void> deleteProductById(@RequestParam("productoId") Long id) {
+    @Operation(
+            summary = "Elimina el producto por Id",
+            description = "Elimina el producto por Id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operación exitosa")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProductById(@PathVariable Long id) {
         if (productService.deleteProduct(id)) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {

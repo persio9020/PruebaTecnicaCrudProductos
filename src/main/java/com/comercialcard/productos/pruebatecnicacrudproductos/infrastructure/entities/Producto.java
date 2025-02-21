@@ -35,11 +35,4 @@ public class Producto {
         this.cantidadStock = cantidadStock;
     }
 
-    public static Producto fromDomainModel(ProductoRequest productoRequest) {
-        return new Producto(productoRequest.getId(), productoRequest.getNombre(), productoRequest.getDescripcion(), productoRequest.getPrecio(), productoRequest.getCantidadStock());
-    }
-
-    public ProductoResponse toDomainModel() {
-        return new ProductoResponse(this.id, this.nombre, this.descripcion, this.precio, this.cantidadStock, this.valorTotalInventario);
-    }
 }

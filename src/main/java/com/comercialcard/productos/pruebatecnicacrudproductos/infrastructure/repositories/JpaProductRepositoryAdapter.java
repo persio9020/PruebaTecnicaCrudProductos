@@ -4,6 +4,7 @@ import com.comercialcard.productos.pruebatecnicacrudproductos.domain.models.dto.
 import com.comercialcard.productos.pruebatecnicacrudproductos.domain.models.dto.ProductoResponse;
 import com.comercialcard.productos.pruebatecnicacrudproductos.domain.ports.out.ProductRepositoryPort;
 import com.comercialcard.productos.pruebatecnicacrudproductos.infrastructure.entities.Producto;
+import com.comercialcard.productos.pruebatecnicacrudproductos.infrastructure.entities.mapper.ProductResponseMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,34 +15,36 @@ import java.util.stream.Collectors;
 public class JpaProductRepositoryAdapter implements ProductRepositoryPort {
 
     private final JpaProductoRepository JpaProductoRepository;
+    private final ProductResponseMapper productResponseMapper;
 
-    public JpaProductRepositoryAdapter(JpaProductoRepository JpaProductoRepository) {
+    public JpaProductRepositoryAdapter(JpaProductoRepository JpaProductoRepository, ProductResponseMapper productResponseMapper) {
         this.JpaProductoRepository = JpaProductoRepository;
+        this.productResponseMapper = productResponseMapper;
     }
 
     @Override
     public ProductoResponse save(ProductoRequest productoRequest) {
-        Producto producto = Producto.fromDomainModel(productoRequest);
+        Producto producto = this.productResponseMapper.productoRequestToProducto(productoRequest);
         Producto saveProducto = JpaProductoRepository.save(producto);
-        return saveProducto.toDomainModel();
+        return this.productResponseMapper.productoToProductoResponse(saveProducto);
     }
 
     @Override
     public Optional<ProductoResponse> findById(Long id) {
-        return JpaProductoRepository.findById(id).map(Producto::toDomainModel);
+        return JpaProductoRepository.findById(id).map(this.productResponseMapper::productoToProductoResponse);
     }
 
     @Override
     public List<ProductoResponse> findAll() {
-        return JpaProductoRepository.findAll().stream().map(Producto::toDomainModel).collect(Collectors.toList());
+        return JpaProductoRepository.findAll().stream().map(this.productResponseMapper::productoToProductoResponse).collect(Collectors.toList());
     }
 
     @Override
     public Optional<ProductoResponse> update(ProductoRequest productoRequest) {
         if (JpaProductoRepository.existsById(productoRequest.getId())) {
-            Producto producto = Producto.fromDomainModel(productoRequest);
+            Producto producto = this.productResponseMapper.productoRequestToProducto(productoRequest);
             Producto saveProducto = JpaProductoRepository.save(producto);
-            return Optional.of(saveProducto.toDomainModel());
+            return Optional.of(productResponseMapper.productoToProductoResponse(saveProducto));
         }
         return Optional.empty();
     }

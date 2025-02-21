@@ -1,5 +1,4 @@
 package com.comercialcard.productos.pruebatecnicacrudproductos.domain.models.dto;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
