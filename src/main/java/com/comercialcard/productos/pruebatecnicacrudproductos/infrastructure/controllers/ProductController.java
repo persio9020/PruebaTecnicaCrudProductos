@@ -50,7 +50,7 @@ public class ProductController {
     public ResponseEntity<ProductoResponse> getProductById(@PathVariable Long id) {
         log.info("Iniciando el product con id: {}", id);
         return productService.retrieveById(Long.parseLong(id.toString())).map(productoDTO -> new ResponseEntity<>(productoDTO, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
     @Operation(
